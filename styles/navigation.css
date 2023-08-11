@@ -1,0 +1,43 @@
+/* Mobile-first styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+}
+
+.auth-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.auth-button {
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.auth-button:hover {
+    background-color: #e53935;
+}
+
+/* Media query for larger screens (1025px and above) */
+@media screen and (min-width: 1024px) {
+    .navbar {
+        justify-content: flex-end; /* Right-align items */
+    }
+
+    .auth-buttons {
+        margin-left: auto; /* Push the buttons to the right */
+    }
+
+    .auth-button {
+        margin-left: 0; /* Remove the margin between buttons */
+    }
+}
+
