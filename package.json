@@ -1,0 +1,10 @@
+{
+    "name": "cookbookconnection",
+    "version": "1.0.0",
+    "description": "A recipe sharing app",
+    "author": "Anup Saud",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2"
+    }
+}
