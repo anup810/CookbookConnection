@@ -15,32 +15,7 @@ const firebaseConfig = {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   
-  // Add a submit event listener to the login form
-  // document.addEventListener('DOMContentLoaded', () => {
-  //   const loginForm = document.querySelector('.login-form');
-  //   loginForm.addEventListener('submit', async (event) => {
-  //     event.preventDefault(); // Prevent form submission
-  
-  //     // Get form values
-  //     const email = document.getElementById('email').value;
-  //     const password = document.getElementById('password').value;
-  
-  //     try {
-  //       // Sign in the user with the provided email and password
-  //       await signInWithEmailAndPassword(auth, email, password);
-        
-  //       // User successfully logged in
-  //       alert('Login successful!');
-  
-  //       // Redirect to recipe.html
-  //       window.location.href = 'recipe.html';
-  //     } catch (error) {
-  //       // Handle error
-  //       alert('Invalid email or password');
-  //       console.error('Error logging in:', error);
-  //     }
-  //   });
-  // });
+
 // Using DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('.login-form');
