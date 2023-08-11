@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,6 +15,7 @@
         <a href="/pages/about.html">About Us</a>
     </nav>
 </head>
+
 <body>
     <div class="container">
         <form class="login-form">
@@ -26,18 +28,18 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit" id="submit">Login</button>
+            <div>
+                <button type="submit" id="submit">Login</button>
+                <p>Don't have an account? <a href="/pages/register.html">Sign Up</a></p>
+            </div>
         </form>
-        <button type="button" id="signup">
-            <p>Don't have an account? <a href="/pages/register.html">Sign Up</a></p>
-        </button>
-
 
     </div>
 
-    
+
     <script type="module" src="/js/login.js"></script>
     <script type="module" src="/js/recipe.js"></script>
 
 </body>
+
 </html>

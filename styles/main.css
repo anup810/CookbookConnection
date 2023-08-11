@@ -59,6 +59,16 @@ body {
 .added-card {
     background-color: #f5f5f5;
 }
+#logout-button {
+    background-color: red;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+}
+
 
 /* Plus button styles */
 .plus-button {

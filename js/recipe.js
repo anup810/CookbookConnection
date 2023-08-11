@@ -13,12 +13,9 @@ const firebaseConfig = {
     measurementId: "G-PMZXDZ5N71"
   };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userContainer = document.getElementById('user-container');
@@ -41,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     signOut(auth)
                         .then(() => {
                             // Redirect to home page
-                            window.location.href = '/index.html'; 
+                            window.location.href = '/index.html';
                         })
                         .catch((error) => {
                             console.error('Error logging out:', error);
@@ -70,5 +67,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error fetching recipes:', error);
     }
-});
+    
+    // Check if the user is logged in
+    const user = auth.currentUser;
+    if (user) {
+        // User is logged in, hide login and signup buttons
+        const loginButton = document.getElementById('loginButton');
+        const signupButton = document.getElementById('signupButton');
+        if (loginButton) {
+            loginButton.style.display = 'none';
+        }
+        if (signupButton) {
+            signupButton.style.display = 'none';
+        }
+    }
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            signOut(auth)
+                .then(() => {
+                    // Redirect to home page
+                    window.location.href = '/index.html';
+                })
+                .catch((error) => {
+                    console.error('Error logging out:', error);
+                });
 
+            // Show a logout notification
+            const notification = document.getElementById('notification');
+            notification.textContent = 'You have been logged out.';
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        });
+    }
+});

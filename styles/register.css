@@ -1,4 +1,4 @@
-/* Reset default styles */
+* Reset default styles */
 body, h2, p, label, input, button, a {
     margin: 0;
     padding: 0;
@@ -50,6 +50,7 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     width: 100%; /* Adjust width for mobile-first */
     max-width: 300px; /* Max width for larger screens */
+    text-align: center;
 }
 
 .form-group {
