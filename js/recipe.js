@@ -22,35 +22,43 @@ const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
     const userContainer = document.getElementById('user-container');
-    const userIcon = document.getElementById('user-icon');
     const logoutButton = document.getElementById('logout-button');
     const userName = document.getElementById('user-name');
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
             // User is logged in, show user info and logout option
-            userContainer.style.display = 'flex';
-            userName.textContent = user.displayName;
+            if (userContainer) {
+                userContainer.style.display = 'flex';
+            }
+            if (userName) {
+                userName.textContent = user.displayName;
+            }
 
             // Handle logout
-            logoutButton.addEventListener('click', () => {
-                signOut(auth)
-                    .then(() => {
-                        // Redirect to home page
-                        window.location.href = '/index.html'; 
-                    })
-                    .catch((error) => {
-                        console.error('Error logging out:', error);
-                    });
-            });
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    signOut(auth)
+                        .then(() => {
+                            // Redirect to home page
+                            window.location.href = '/index.html'; 
+                        })
+                        .catch((error) => {
+                            console.error('Error logging out:', error);
+                        });
+                });
+            }
         } else {
             // User is not logged in, hide user info and logout option
-            userContainer.style.display = 'none';
-            userName.textContent = '';
+            if (userContainer) {
+                userContainer.style.display = 'none';
+            }
+            if (userName) {
+                userName.textContent = '';
+            }
         }
     });
 
-  
     try {
         const recipesQuery = query(collection(db, 'recipes'));
         const recipesSnapshot = await getDocs(recipesQuery);
@@ -63,3 +71,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error fetching recipes:', error);
     }
 });
+
