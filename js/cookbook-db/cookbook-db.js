@@ -122,7 +122,7 @@ class CookBookDB {
                 reject('Database not opened! ')
             }
 
-            const docRef = doc(this.db, 'cookbook', updateRecipe.id);
+            const docRef = doc(this.db, 'cookbook', updateRecipe.id)
 
             updateDoc(docRef, {
                 title: updateRecipe.title,
@@ -135,9 +135,9 @@ class CookBookDB {
                 resolve();
             })
             .catch((error) => {
-                reject(error.message);
-            });
-        });
+                reject(error.message)
+            })
+        })
     }
 
     delete(id){
