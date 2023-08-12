@@ -113,6 +113,102 @@ recipeForm.addEventListener('submit', async (event) => {
     }
 });
 
+// Add a click event listener to the "Update" buttons
+recipeCardsContainer.addEventListener('click', async (event) => {
+    const updateButton = event.target.closest('.update-button');
+    if (updateButton) {
+        const recipeCard = updateButton.closest('.card');
+        if (recipeCard) {
+            // Get the recipe ID from the button's data-id attribute
+            const recipeId = updateButton.getAttribute('data-id');
+
+            // Fetch the existing recipe data from the database
+            const cookbookDbInstance = CookBookDB;
+            try {
+                await cookbookDbInstance.open();
+                const recipe = await cookbookDbInstance.get(recipeId);
+                if (recipe) {
+                    // Populate the form fields with existing recipe data
+                    document.getElementById('title').value = recipe.title;
+                    document.getElementById('prepTime').value = recipe.prepTime;
+                    document.getElementById('description').value = recipe.description;
+                    document.getElementById('ingredients').value = recipe.ingredients;
+                    document.getElementById('instructions').value = recipe.instructions;
+
+                    // Show the form overlay for updating
+                    overlay.style.display = 'flex';
+
+                    // Add a submit event listener to the form for updating
+                    recipeForm.addEventListener('submit', async (event) => {
+                        event.preventDefault(); // Prevent form submission
+
+                        // Get updated form values
+                        const updatedTitle = document.getElementById('title').value;
+                        const updatedPrepTime = document.getElementById('prepTime').value;
+                        const updatedDescription = document.getElementById('description').value;
+                        const updatedIngredients = document.getElementById('ingredients').value;
+                        const updatedInstructions = document.getElementById('instructions').value;
+
+                        try {
+                            // Update the recipe in the database
+                            await cookbookDbInstance.update(recipeId, {
+                                title: updatedTitle,
+                                prepTime: updatedPrepTime,
+                                description: updatedDescription,
+                                ingredients: updatedIngredients,
+                                instructions: updatedInstructions
+                            });
+
+                            // Display a notification
+                            showNotification("Recipe updated successfully");
+
+                            // Close the form overlay
+                            closeFormOverlay();
+                        } catch (error) {
+                            // Handle error here
+                            console.error(error);
+                        }
+                    });
+                }
+            } catch (error) {
+                // Handle error here
+                console.error(error);
+            }
+        }
+    }
+});
+
+
+
+
+// Add a click event listener to the "Delete" buttons
+recipeCardsContainer.addEventListener('click', async (event) => {
+    const deleteButton = event.target.closest('.delete-button');
+    if (deleteButton) {
+        const recipeCard = deleteButton.closest('.card');
+        if (recipeCard) {
+            // Get the recipe ID from the button's data-id attribute
+            const recipeId = deleteButton.getAttribute('data-id');
+
+            // Delete the recipe from the database
+            const cookbookDbInstance = CookBookDB;
+            try {
+                await cookbookDbInstance.open();
+                await cookbookDbInstance.delete(recipeId);
+                // Remove the recipe card from the container
+                recipeCard.remove();
+                // Display a notification
+                showNotification("Recipe deleted successfully");
+            } catch (error) {
+                // Handle error here
+                console.error(error);
+            }
+        }
+    }
+});
+
+
+
 // Add click event listeners to update, delete, and share buttons
 recipeCardsContainer.addEventListener('click', async (event) => {
     const target = event.target;
@@ -130,4 +226,25 @@ recipeCardsContainer.addEventListener('click', async (event) => {
         // Handle share button click, e.g., open a modal with sharing options
         // You can use recipeId to identify which recipe to share
     }
+    recipeCardsContainer.addEventListener('click', (event) => {
+        if (event.target.classList.contains('share-button')) {
+            const card = event.target.closest('.card');
+            const titleElement = card.querySelector('h3');
+            const prepTimeElement = card.querySelector('p:nth-child(3)');
+            const descriptionElement = card.querySelector('p:nth-child(4)');
+    
+            if (titleElement && prepTimeElement && descriptionElement) {
+                const title = titleElement.textContent;
+                const prepTime = prepTimeElement.textContent.split(' ')[1];
+                const description = descriptionElement.textContent;
+    
+                const recipeData = { title, prepTime, description };
+    
+                localStorage.setItem('sharedRecipe', JSON.stringify(recipeData));
+    
+                showNotification("Recipe shared successfully");
+            }
+        }
+    })
+
 });
