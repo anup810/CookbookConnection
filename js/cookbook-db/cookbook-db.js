@@ -1,161 +1,94 @@
-/**
- * CookBookDB API using database
- */
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, addDoc, collection, doc, getDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+//API for using cloud or local (Background SYNC)
+import dbOnline from './cookbook-db-cloud.js';
+import dbOffline from './cookbook-db-local.js';
 
 class CookBookDB {
     constructor() {
-        this.db = null;
-        this.isAvailable = false;
+        console.log('Online DB', dbOnline)
+        console.log('Offline DB', dbOffline)
+        this.dbOnline = dbOnline;
+        this.dbOffline = dbOffline;
+        this.swController = null;
+        this.swRegistration = null;
     }
 
     open() {
+        console.log("CookBook DB opened")
         return new Promise((resolve, reject) => {
-            try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyDkLIgwVKpqdOpuhF1-26RsKaRQmjMWtaw",
-                    authDomain: "map-pwa-ca20f.firebaseapp.com",
-                    databaseURL: "https://map-pwa-ca20f-default-rtdb.firebaseio.com",
-                    projectId: "map-pwa-ca20f",
-                    storageBucket: "map-pwa-ca20f.appspot.com",
-                    messagingSenderId: "134536483378",
-                    appId: "1:134536483378:web:1eb239d2da1ce7fb35222b",
-                    measurementId: "G-PMZXDZ5N71"
-                  };
-
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-
-                // Initialize Cloud Firestore and get a reference to the service
-                const db = getFirestore(app);
-                if (db) {
-                    this.db = db;
-                    this.isAvailable = true;
-                    resolve();
-                }
-                else {
-                    reject("This Db has an error")
-                }
-            }
-            catch (error) {
-                reject(error.message)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    if ('active' in registration && 'sync' in registration) {
+                        this.dbOffline.open()
+                            .then(() => {
+                                this.swController = registration.active;
+                                this.swRegistration = registration;
+                                this.dbOnline.open().then(resolve).catch(reject);
+                            })
+                            .catch(() => {
+                                this.dbOnline.open().then(resolve).catch(reject);
+                            });
+                    } else {
+                        this.dbOnline.open().then(resolve).catch(reject);
+                    };
+                });
+            } else {
+                this.dbOnline.open().then(resolve).catch(reject);
             }
         })
     }
 
-    add(title, prepTime, description, ingredients, instructions){
-        return new Promise((resolve, reject) => {
-            if(!this.isAvailable){
-                reject('Database not opened! ')
-            }
-
-            const addForm = {
-                title: title,
-                prepTime: prepTime,
-                description: description,
-                ingredients: ingredients,
-                instructions: instructions
-            }
-
-            const dbCollection = collection(this.db, 'cookbook')
-
-            addDoc(dbCollection, addForm)
-            .then((docRef) => {
-                resolve();
-            })
-            .catch((error) => {
-                reject(error.message)
-            })
-        })
-    }
-
-    getAll(){
-        return new Promise((resolve, reject) => {
-            if(!this.isAvailable){
-                reject('Database not opened! ')
-            }
-
-            const dbCollection = collection(this.db, 'cookbook')
-
-            getDocs(dbCollection)
-            .then((recipeSnapshot) => {
-                const result = []
-
-                recipeSnapshot.forEach((doc) => {
-                    const data = doc.data()
-                    data.id = doc.id
-                    result.push(data)
+    add(title, prepTime, descriptions, ingredients, instructions) {
+        if (navigator.onLine) {
+            return this.dbOnline.add(title, prepTime, descriptions, ingredients, instructions);
+        } else {
+            this.swRegistration.sync.getTags()
+                .then((tags) => {
+                    if (!tags.includes('add-recipe')) {
+                        this.swRegistration.sync.register('add-recipe')
+                    }
                 })
-                resolve(result)
-            })
-            .catch((error) => {
-                reject(error.message)
-            })
-        })
+            return this.dbOffline.add(title, prepTime, descriptions, ingredients, instructions);
+        }
     }
 
-    get(id){
-        return new Promise((resolve, reject) => {
-            if(!this.isAvailable){
-                reject('Database not opened! ')
-            }
-
-            const docRef = doc(this.db, 'cookbook', id)
-
-            getDoc(docRef)
-            .then((docSnap) => {
-                const data = docSnap.data()
-                data.id = id
-                resolve(data)
+    getAll() {
+        if (navigator.onLine) {
+            return this.dbOnline.getAll();
+        } else {
+            return new Promise((resolve, reject) => {
+                reject('You must be connected to web')
             })
-            .catch((error) => {
-                reject(error.message)
-            })
-        })
+        }
     }
 
-    update(updateRecipe){
-        return new Promise((resolve, reject) => {
-            if(!this.isAvailable){
-                reject('Database not opened! ')
-            }
+    get(id) {
+        if (navigator.onLine) {
+            return this.dbOnline.get(id);
+        } else {
+            return new Promise((resolve, reject) => {
+                reject('You must be connected to web')
+            })
+        }
+    }
 
-            const docRef = doc(this.db, 'cookbook', updateRecipe.id)
-
-            updateDoc(docRef, {
-                title: updateRecipe.title,
-                prepTime: updateRecipe.prepTime,
-                description: updateRecipe.description,
-                ingredients: updateRecipe.ingredients,
-                instructions: updateRecipe.instructions
+    update(updateRecipe) {
+        if (navogator.onLine) {
+            return this.dbOnline.update(updateRecipe);
+        } else {
+            return new Promise((resolve, reject) => {
+                reject('You must be connected to web')
             })
-            .then(() => {
-                resolve();
-            })
-            .catch((error) => {
-                reject(error.message)
-            })
-        })
+        }
     }
 
     delete(id){
-        return new Promise((resolve, reject) => {
-            if(!this.isAvailable){
-                reject('Database not opened! ')
-            }
-
-            const docRef = doc(this.db, 'cookbook', id)
-
-            deleteDoc(docRef)
-            .then(() => {
-                resolve();
+        if(navigator.onLine){
+            return this.dbOnline.delete(id);
+        } else {
+            return new Promise((resolve, reject) => {
+                reject("You must be connected to web")
             })
-            .catch((error) => {
-                reject(error.message)
-            })
-        })
+        }
     }
 }
 

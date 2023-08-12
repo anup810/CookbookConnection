@@ -1,19 +1,27 @@
-import CookBookDB from "./cookbook-db/cookbook-db.js";
+
+
+
+
+import CookBookDB from "./cookbook-db/cookbook-db-cloud.js";
 
 const overlay = document.getElementById('overlay');
 const formContainer = document.getElementById('formContainer');
 const plusButton = document.querySelector('.plus-icon');
 const cancelButton = document.getElementById('cancelButton');
 const recipeCardsContainer = document.getElementById('recipeCards');
+let isUpdating = false; // Flag to track updating state
 
-// Add a click event listener to the button
+// Add a click event listener to the plus button
 plusButton.addEventListener('click', () => {
-    overlay.style.display = 'flex';
+    if (!isUpdating) {
+        overlay.style.display = 'flex';
+    }
 });
 
 // Add a click event listener to the Cancel button
 cancelButton.addEventListener('click', () => {
     overlay.style.display = 'none';
+    isUpdating = false; // Reset updating state when cancelling
 });
 
 // Function to create a recipe card with options
@@ -48,6 +56,7 @@ function showNotification(message) {
 
 function closeFormOverlay() {
     overlay.style.display = 'none';
+    isUpdating = false; // Reset updating state when closing overlay
 }
 
 async function addExistingRecipeCards() {
@@ -80,9 +89,9 @@ recipeForm.addEventListener('submit', async (event) => {
 
     try {
         await cookbookDbInstance.open();
-        const addedRecipe = await cookbookDbInstance.add(addedRecipe.id,title, prepTime, description, ingredients, instructions);
+        const addedRecipe = await cookbookDbInstance.add(title, prepTime, description, ingredients, instructions);
 
-        const newCard = createRecipeCardWithOptions(addedRecipe.id, title, prepTime, description);
+        const newCard = createRecipeCardWithOptions(title, prepTime, description);
         recipeCardsContainer.appendChild(newCard);
 
         recipeForm.reset();
@@ -94,10 +103,12 @@ recipeForm.addEventListener('submit', async (event) => {
     }
 });
 
+
 recipeCardsContainer.addEventListener('click', async (event) => {
     const target = event.target;
 
     if (target.classList.contains('update-button')) {
+        isUpdating = true; // Set updating state when opening update form
         const recipeId = target.getAttribute('data-id');
         const cookbookDbInstance = CookBookDB;
         try {
@@ -132,15 +143,13 @@ recipeCardsContainer.addEventListener('click', async (event) => {
                             instructions: updatedInstructions
                         });
 
-                        // Remove the old card
-                        const oldCard = recipeCardsContainer.querySelector(`[data-id="${recipeId}"]`);
-                        if (oldCard) {
-                            oldCard.remove();
+                        // Update the existing card with the updated information
+                        const existingCard = recipeCardsContainer.querySelector(`[data-id="${recipeId}"]`);
+                        if (existingCard) {
+                            existingCard.querySelector('h3').textContent = updatedTitle;
+                            existingCard.querySelector('p:nth-child(3)').textContent = `Time: ${updatedPrepTime}`;
+                            existingCard.querySelector('p:nth-child(4)').textContent = updatedDescription;
                         }
-
-                        // Create and add the updated card
-                        const updatedCard = createRecipeCardWithOptions(recipeId, updatedTitle, updatedPrepTime, updatedDescription);
-                        recipeCardsContainer.appendChild(updatedCard);
 
                         showNotification("Recipe updated successfully");
                         closeFormOverlay();
@@ -155,16 +164,21 @@ recipeCardsContainer.addEventListener('click', async (event) => {
     } else if (target.classList.contains('delete-button')) {
         const recipeId = target.getAttribute('data-id');
         const cookbookDbInstance = CookBookDB;
+
         try {
             await cookbookDbInstance.open();
             await cookbookDbInstance.delete(recipeId);
+
+            // Remove the card from the UI
             const recipeCard = target.closest('.card');
             recipeCard.remove();
+
             showNotification("Recipe deleted successfully");
         } catch (error) {
             console.error(error);
         }
-    } else if (target.classList.contains('share-button')) {
+    }
+    else if (target.classList.contains('share-button')) {
         const card = target.closest('.card');
         const titleElement = card.querySelector('h3');
         const prepTimeElement = card.querySelector('p:nth-child(3)');
@@ -177,9 +191,11 @@ recipeCardsContainer.addEventListener('click', async (event) => {
 
             const recipeData = { title, prepTime, description };
 
+            // Store the shared recipe data in localStorage
             localStorage.setItem('sharedRecipe', JSON.stringify(recipeData));
 
             showNotification("Recipe shared successfully");
         }
     }
 });
+
